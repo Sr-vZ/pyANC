@@ -11,9 +11,24 @@ FORMAT = pyaudio.paInt16  # Audio format
 CHANNELS = 1  # Single channel for microphone
 RATE = 44100  # Samples per second
 
-# Create matplotlib figure and axes
-fig, ax = plt.subplots(1, figsize=(15, 7))
-plt.axhline(y=128, linestyle="--", color="gray")
+# Create matplotlib figure and axes for the original sound
+fig, (ax_original, ax_antimirror) = plt.subplots(1, 2, figsize=(15, 7))
+ax_original.axhline(y=128, linestyle="--", color="gray")
+ax_original.set_title("Original Sound")
+ax_original.set_xlabel("samples")
+ax_original.set_ylabel("amplitude")
+ax_original.set_ylim(0, 255)
+ax_original.set_xlim(0, 2 * CHUNK)
+plt.setp(ax_original, xticks=[], yticks=[])
+
+# Create matplotlib figure and axes for the antisound
+ax_antimirror.axhline(y=128, linestyle="--", color="gray")
+ax_antimirror.set_title("Antisound")
+ax_antimirror.set_xlabel("samples")
+ax_antimirror.set_ylabel("amplitude")
+ax_antimirror.set_ylim(0, 255)
+ax_antimirror.set_xlim(0, 2 * CHUNK)
+plt.setp(ax_antimirror, xticks=[], yticks=[])
 
 # PyAudio class instance
 p = pyaudio.PyAudio()
@@ -41,17 +56,17 @@ outputstream = p.open(
 # Variable for plotting
 x = np.arange(0, 2 * CHUNK, 2)
 
-# Create a line object with random data
-(line,) = ax.plot(x, np.random.rand(CHUNK), "-", lw=1, mec=(255, 0, 0, 1))
-(line_mirror,) = ax.plot(x, np.random.rand(CHUNK), "-", lw=1, mec=(0, 0, 255, 1))
+# Create a line object with random data for original sound
+(line_original,) = ax_original.plot(
+    x, np.random.rand(CHUNK), "-", lw=1, mec=(255, 0, 0, 1)
+)
+
+# Create a line object with random data for antisound
+(line_antimirror,) = ax_antimirror.plot(
+    x, np.random.rand(CHUNK), "-", lw=1, mec=(0, 0, 255, 1)
+)
 
 # Basic formatting for the axes
-ax.set_title("AUDIO WAVEFORM")
-ax.set_xlabel("samples")
-ax.set_ylabel("amplitude")
-ax.set_ylim(0, 255)
-ax.set_xlim(0, 2 * CHUNK)
-plt.setp(ax, xticks=[], yticks=[])
 
 # Show the plot
 plt.show(block=False)
@@ -84,8 +99,8 @@ while True:
     # Output antisound
     outputstream.write(data_mirror)
 
-    line.set_ydata(data_np)
-    line_mirror.set_ydata(data_np_mirror)
+    line_original.set_ydata(data_np)
+    line_antimirror.set_ydata(data_np_mirror)
 
     # Update figure canvas
     try:
